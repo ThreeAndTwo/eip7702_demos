@@ -15,7 +15,6 @@ async function alternativeReplay() {
         transport: http(config.SEPOLIA_RPC),
     }).extend(eip7702Actions());
 
-    // 使用类型断言解决类型不匹配问题
     const existingAuthorization = {
         contractAddress: "0x6a06b2b7f83514f42764d412e54afaf4bb0265c8", 
         chainId: 11155111,
@@ -23,7 +22,7 @@ async function alternativeReplay() {
         yParity: 0,
         r: "0xe2e9be07dfeb0bf90c2f698e15a19b1ed5d58da21b4866d757e8b2540dc6bf9d",
         s: "0x60f611a51958f964245918f1df6bc9d0274a67487fa5f4b516ec23acb531f609"
-    } as any; // 使用类型断言
+    } as any;
 
     const hash = await walletClient.sendTransaction({
         account: sponsorAccount,
@@ -37,5 +36,4 @@ async function alternativeReplay() {
 }
 
 
-// 执行交易重放
 alternativeReplay();

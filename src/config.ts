@@ -5,6 +5,7 @@ dotenv.config();
 
 export const PRIVATE_KEY = (process.env.PRIVATE_KEY || '') as `0x${string}`;
 export const SPONSOR_PRIVATE_KEY = (process.env.SPONSOR_PRIVATE_KEY || '') as `0x${string}`;
+export const SPONSOR2_PRIVATE_KEY = (process.env.SPONSOR2_PRIVATE_KEY || '') as `0x${string}`;
 export const SEPOLIA_RPC = process.env.SEPOLIA_RPC || '';
 export const HOLESKY_RPC = process.env.HOLESKY_RPC || '';
 export const SEPOLIA_BATCH_ETH_DELEGATION_CA = (process.env.SEPOLIA_BATCH_ETH_DELEGATION_CA || '') as `0x${string}`;

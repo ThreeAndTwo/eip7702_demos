@@ -8,17 +8,27 @@ import { eip7702Actions } from "viem/experimental";
 import * as config from './config';
 
 /**
- * 正常发交易的思路（代付）：
- * EOA 作为伪 safe 账户。
- * https://sepolia.etherscan.io/tx/0x65ae1b483d814e2267efd849acc39305267e3972d3db5990a2bf1b621f7ea74e
- * sponsor nonce +1
- * authority nonce +1
- * 
- * 非正常发交易的思路（代付）：
- * sponsor nonce +1, authority 使用已经使用过的 nonce。 
- * https://sepolia.etherscan.io/tx/0xe46f8fd561a1a49c2ce94bf0f38bc72fbf78eb5dac869232bf5cd18d52f8b074
- * 交易可以成功，实际上使用的 nonce 是 3。
- */
+* Normal transaction approach (sponsored):
+* EOA acts as a pseudo-safe account.
+* https://sepolia.etherscan.io/tx/0x65ae1b483d814e2267efd849acc39305267e3972d3db5990a2bf1b621f7ea74e
+* sponsor nonce +1
+* authority nonce +1
+* 
+* Abnormal transaction approach (sponsored):
+* sponsor nonce +1, authority uses a previously used nonce.
+* https://sepolia.etherscan.io/tx/0xe46f8fd561a1a49c2ce94bf0f38bc72fbf78eb5dac869232bf5cd18d52f8b074
+* Transaction succeeds, actually using nonce 3.
+* 
+* 
+* Abnormal transaction approach (sponsored):
+* EOA acts as a pseudo-safe account.
+*
+* URL_ADDRESSpolia.etherscan.io/tx/0x65ae1b483d814e2267efd849acc39305267e3972d3db5990a2bf1b621f7ea74e
+* sponsor nonce +1
+* authority set to an extremely high nonce = 1001
+* https://sepolia.etherscan.io/tx/0xad22ade561a7627753950fcd46e90399a4bbc57da2dfbb71db8dec6c10580b32
+* Transaction succeeds
+*/
 
 async function alternative_sponsored_transaction() {
     // 初始化账户和客户端
@@ -42,7 +52,7 @@ async function alternative_sponsored_transaction() {
         account: authorityAccount,
         contractAddress: config.SEPOLIA_BATCH_ETH_DELEGATION_CA,
         sponsor: true, // 标记为可赞助
-        nonce: 3,
+        nonce: 1001,
     });
     
     // 授权账户签名这个授权
