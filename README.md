@@ -207,15 +207,14 @@ batch_dispatch_eth();
 
 ```
 
-| 测试 ID | 测试描述 | 测试配置 | 预期结果 | 实际结果 | 交易哈希 | 结论 |
-| --- | --- | --- | --- | --- | --- | --- |
+| 测试ID | 测试描述 | 测试配置 | 预期结果 | 实际结果 | 交易哈希 | 结论 |
+|-------|---------|---------|---------|---------|---------|------|
 | 1 | 直接授权给目标合约 | 授权给目标合约，然后调用批处理函数 | 成功 | 失败 | N/A | 必须授权给批处理合约而非直接授权给目标合约 |
-| 2 | 多合约授权 | 同时授权批处理合约和注册合约 | 总体nonce只增加1 | 总体nonce只增加1 | [0xa1fdb0f13a46ceb5fb122e61666d6d3216fb033e53728aaeb254810b71bb228f](https://sepolia.etherscan.io/tx/0xa1fdb0f13a46ceb5fb122e61666d6d3216fb033e53728aaeb254810b71bb228f) | 多个授权合约共享同一个nonce |
-| 3 | 低nonce授权 | authList的nonce故意设置低于当前nonce | 交易失败 | 交易成功，正常执行 | [0xd0fc90557800773bce9423f89d67e972e9b5cdcd3f6dbf64a4ffea2b0d9f7bc2](https://sepolia.etherscan.io/tx/0xd0fc90557800773bce9423f89d67e972e9b5cdcd3f6dbf64a4ffea2b0d9f7bc2) | nonce检查机制与预期不符 |
-| 4 | 授权nonce不一致 | authList中设置不同的nonce | 交易失败 | 交易失败交易成功，正常执行 | [0xa3c744601c6dc0b83946f51945615c703d37700413f0f87a329440b2af298457](https://sepolia.etherscan.io/tx/0xa3c744601c6dc0b83946f51945615c703d37700413f0f87a329440b2af298457) | 授权列表内的nonce一致性未被强制检查 |
-| 5 | 高nonce授权 | 授权nonce高于当前账户nonce | 交易失败 | 交易成功，当前nonce为17，授权nonce分别为19和20 | [0x3b205eb99136ffecd515da69cccf51838623f1adae3fcd93cb15cc65427180f3](https://sepolia.etherscan.io/tx/0x3b205eb99136ffecd515da69cccf51838623f1adae3fcd93cb15cc65427180f3) | 授权可以使用未来nonce |
-| 6 | nonce 复用测试 | 使用已在测试5中用过的nonce(19,20)发送新交易 | 交易失败 | 交易成功，可以重复使用已授权过的nonce | https://sepolia.etherscan.io/tx/0xa4befcad8f012f000d9bf33e8151d160212ef6921427d529a592a47b68794547 -> nonce 18
-https://sepolia.etherscan.io/tx/0x484e22fcdcb9b01b59c8cd240fb4884267b8fe849c9a1910e342a8bc3e169167 -> nonce 19 | 授权nonce可以重复使用，存在重放风险 |
+| 2 | 多合约授权 | 同时授权批处理合约和注册合约 | 总体nonce只增加1 | 总体nonce只增加1 | [0xa1fdb0f](https://sepolia.etherscan.io/tx/0xa1fdb0f13a46ceb5fb122e61666d6d3216fb033e53728aaeb254810b71bb228f) | 多个授权合约共享同一个nonce |
+| 3 | 低nonce授权 | authList的nonce故意设置低于当前nonce | 交易失败 | 交易成功，正常执行 | [0xd0fc90](https://sepolia.etherscan.io/tx/0xd0fc90557800773bce9423f89d67e972e9b5cdcd3f6dbf64a4ffea2b0d9f7bc2) | nonce检查机制与预期不符 |
+| 4 | 授权nonce不一致 | authList中设置不同的nonce | 交易失败 | 交易成功，正常执行 | [0xa3c744](https://sepolia.etherscan.io/tx/0xa3c744601c6dc0b83946f51945615c703d37700413f0f87a329440b2af298457) | 授权列表内的nonce一致性未被强制检查 |
+| 5 | 高nonce授权 | 授权nonce高于当前账户nonce | 交易失败 | 交易成功，当前nonce为17，授权nonce为19和20 | [0x3b205e](https://sepolia.etherscan.io/tx/0x3b205eb99136ffecd515da69cccf51838623f1adae3fcd93cb15cc65427180f3) | 授权可以使用未来nonce |
+| 6 | nonce复用测试 | 使用已在测试5中用过的nonce(19,20)发送新交易 | 交易失败 | 交易成功，可重复使用已授权过的nonce | [链接1](https://sepolia.etherscan.io/tx/0xa4befcad8f012f000d9bf33e8151d160212ef6921427d529a592a47b68794547) [链接2](https://sepolia.etherscan.io/tx/0x484e22fcdcb9b01b59c8cd240fb4884267b8fe849c9a1910e342a8bc3e169167) | 授权nonce可重复使用，存在重放风险 |
 
 ### JSON-RPC 查询结果
 
@@ -521,23 +520,21 @@ alternative_sponsored_transaction();
 | 2 | 已用nonce代付 | sponsor nonce +1, authority使用已用过的nonce(3) | 交易失败 | 交易成功 | [0xe46f8fd561a1a49c2ce94bf0f38bc72fbf78eb5dac869232bf5cd18d52f8b074](https://sepolia.etherscan.io/tx/0xe46f8fd561a1a49c2ce94bf0f38bc72fbf78eb5dac869232bf5cd18d52f8b074) |
 | 3 | 极高nonce代付 | EOA作为伪safe账户，authority nonce设为1001 | 交易失败 | 交易成功 | [0xe46f8fd561a1a49c2ce94bf0f38bc72fbf78eb5dac869232bf5cd18d52f8b074](https://sepolia.etherscan.io/tx/0xad22ade561a7627753950fcd46e90399a4bbc57da2dfbb71db8dec6c10580b32) |
 
-# 严重 Bug 以及修复意见
+## EIP-7702 安全分析报告
 
-## EIP-7702 严重安全漏洞分析报告
+### 概述
 
-### 漏洞概述
-
-基于实际测试结果，我发现 EIP-7702 授权机制存在严重的安全漏洞，主要表现在 nonce 处理机制上。这些漏洞已通过交易重放成功验证，对采用该标准的应用构成严重安全威胁。
+基于实际测试结果，我发现 EIP-7702 授权机制存在严重的安全隐患，主要表现在 nonce 处理机制上。这些漏洞已通过交易重放成功验证，对采用该标准的应用构成严重安全威胁。
 
 ### 漏洞详情
 
-| 漏洞ID | 漏洞描述 | 安全影响 | 验证方法 | 证明交易哈希 |
+| 隐患ID | 隐患描述 | 安全影响 | 验证方法 | 证明交易哈希 |
 | --- | --- | --- | --- | --- |
 | CVE-01 | 授权 nonce 可重复使用 | 严重 - 允许无限次重放授权交易 | 使用相同 nonce 重复发送交易 | https://sepolia.etherscan.io/tx/0xe46f8fd561a1a49c2ce94bf0f38bc72fbf78eb5dac869232bf5cd18d52f8b074 |
 | CVE-02 | 授权接受任意 nonce 值 | 高危 - 包括过去、当前和未来的 nonce | 使用极高 nonce 值(1001)测试 | https://sepolia.etherscan.io/tx/0xad22ade561a7627753950fcd46e90399a4bbc57da2dfbb71db8dec6c10580b32 |
 | CVE-03 | 授权列表内 nonce 不一致性检查缺失 | 高危 - 允许混合使用有效/无效 nonce | 在一个交易中使用不同 nonce 的授权 | https://sepolia.etherscan.io/tx/0xa3c744601c6dc0b83946f51945615c703d37700413f0f87a329440b2af298457 |
 
-### 漏洞根本原因分析
+### 根本原因分析
 
 ### 核心问题
 
@@ -581,7 +578,7 @@ alternative_sponsored_transaction();
     - 使交易顺序和账户状态变得不可预测
     - 可能对依赖这些假设的上层应用造成连锁反应
 
-### 漏洞后果
+### 可能产生的后果
 
 1. **无限授权重放**：
     - 一个授权签名可以被无限次重放

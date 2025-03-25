@@ -513,23 +513,21 @@ alternative_sponsored_transaction();
 | 2 | Used nonce sponsorship | Sponsor nonce +1, authority uses previously used nonce (3) | Transaction fails | Transaction succeeds | [0xe46f8fd561a1a49c2ce94bf0f38bc72fbf78eb5dac869232bf5cd18d52f8b074](https://sepolia.etherscan.io/tx/0xe46f8fd561a1a49c2ce94bf0f38bc72fbf78eb5dac869232bf5cd18d52f8b074) |
 | 3 | Extremely high nonce sponsorship | EOA as pseudo-safe account, authority nonce set to 1001 | Transaction fails | Transaction succeeds | [0xe46f8fd561a1a49c2ce94bf0f38bc72fbf78eb5dac869232bf5cd18d52f8b074](https://sepolia.etherscan.io/tx/0xad22ade561a7627753950fcd46e90399a4bbc57da2dfbb71db8dec6c10580b32) |
 
-# Critical Bugs and Remediation Recommendations
+## EIP-7702 Security Analysis Report
 
-## EIP-7702 Critical Security Vulnerability Analysis Report
+### Overview
 
-### Vulnerability Overview
-
-Based on actual test results, I have discovered serious security vulnerabilities in the EIP-7702 authorization mechanism, primarily in the nonce handling mechanism. These vulnerabilities have been successfully verified through transaction replay, posing a severe security threat to applications adopting this standard.
+Based on empirical testing results, I have identified significant security concerns in the EIP-7702 authorization mechanism, particularly in its nonce handling implementation. These vulnerabilities have been successfully verified through transaction replay attacks and pose substantial security threats to applications adopting this standard.
 
 ### Vulnerability Details
 
 | Vulnerability ID | Description | Security Impact | Verification Method | Proof Transaction Hash |
 | --- | --- | --- | --- | --- |
-| CVE-01 | Authorization nonces can be reused | Critical - Allows unlimited replay of authorized transactions | Repeatedly sending transactions with the same nonce | https://sepolia.etherscan.io/tx/0xe46f8fd561a1a49c2ce94bf0f38bc72fbf78eb5dac869232bf5cd18d52f8b074 |
-| CVE-02 | Authorizations accept arbitrary nonce values | High - Including past, current, and future nonces | Testing with extremely high nonce value (1001) | https://sepolia.etherscan.io/tx/0xad22ade561a7627753950fcd46e90399a4bbc57da2dfbb71db8dec6c10580b32 |
-| CVE-03 | Lack of nonce consistency check within authorization list | High - Allows mixing valid/invalid nonces | Using authorizations with different nonces in one transaction | https://sepolia.etherscan.io/tx/0xa3c744601c6dc0b83946f51945615c703d37700413f0f87a329440b2af298457 |
+| CVE-01 | Authorization nonce can be reused indefinitely | Critical - Allows unlimited replay of authorized transactions | Repeated transaction submission using identical nonce | https://sepolia.etherscan.io/tx/0xe46f8fd561a1a49c2ce94bf0f38bc72fbf78eb5dac869232bf5cd18d52f8b074 |
+| CVE-02 | Authorization accepts arbitrary nonce values | High - Including past, current, and future nonces | Testing with extremely high nonce value (1001) | https://sepolia.etherscan.io/tx/0xad22ade561a7627753950fcd46e90399a4bbc57da2dfbb71db8dec6c10580b32 |
+| CVE-03 | Lack of consistency checks for nonces within authorization lists | High - Permits mixed use of valid/invalid nonces | Using authorizations with different nonces in a single transaction | https://sepolia.etherscan.io/tx/0xa3c744601c6dc0b83946f51945615c703d37700413f0f87a329440b2af298457 |
 
-## Vulnerability Root Cause Analysis
+### Root Cause Analysis
 
 ### Core Issues
 
@@ -544,24 +542,23 @@ Based on actual test results, I have discovered serious security vulnerabilities
    - Node client implementations fail to adhere to blockchain's fundamental security principles (replay protection)
    - Authorization validation doesn't verify whether a nonce has been previously used
    - No persistent state tracking for used authorization nonces
-   - Authorization validation logic completely disconnected from standard transaction nonce validation
 
-### Technical Deficiencies
+## Technical Deficiencies
 
-#### Missing State Management
+### Missing State Management
 - The EVM fails to incorporate authorization nonces into account persistent state
 
-#### Validation Logic Flaws
+### Validation Logic Flaws
 - Implementation only verifies signature validity while ignoring nonce uniqueness requirements
 - Accepts arbitrary nonce values (past, present, or future) for authorizations
 - Allows multiple authorizations with different nonces in the same transaction
 
-#### Disconnection from Existing Mechanisms
+### Disconnection from Existing Mechanisms
 - Fails to effectively integrate with the security model of account abstraction
 - Undermines fundamental assumptions about transaction ordering and execution
 - Doesn't leverage existing nonce mechanisms for replay protection
 
-### Attack Vectors and Security Impact
+## Attack Vectors and Security Impact
 
 1. **Perpetual Authorization Validity**:
    - Once an authorization is issued, it cannot be revoked or invalidated
@@ -578,7 +575,7 @@ Based on actual test results, I have discovered serious security vulnerabilities
    - Renders transaction ordering and account state unpredictable
    - May cause cascading effects on higher-level applications that depend on these assumptions
 
-### Vulnerability Consequences
+### Potential Consequences
 
 1. **Unlimited Authorization Replay**:
    - A single authorization signature can be replayed indefinitely
@@ -590,8 +587,8 @@ Based on actual test results, I have discovered serious security vulnerabilities
    - Potentially leads to assets being repeatedly extracted until depleted
    - Sponsorship mechanisms can be weaponized as attack vectors
 
-### Summary
+## Conclusion
 
-The design of EIP-7702 has significant issues, particularly in its nonce handling mechanism for preventing replay attacks. Design flaws such as reusable authorization nonces, acceptance of arbitrary nonce values, and lack of consistency checks make replay attacks a practical risk. The root cause lies in the designers' pursuit of flexibility, compatibility, and innovation, but this trade-off sacrificed some security aspects, resulting in a protocol that cannot fully prevent replay attacks on its own and requires additional measures from clients and users.
+EIP-7702's design exhibits significant issues, particularly in its nonce handling mechanism for preventing replay attacks. Design flaws such as reusable authorization nonces, acceptance of arbitrary nonce values, and lack of consistency checks make replay attacks a practical risk. The root cause lies in the designers' pursuit of flexibility, compatibility, and innovation, but this trade-off sacrificed some security aspects, resulting in a protocol that cannot fully prevent replay attacks on its own and requires additional measures from clients and users.
 
 If EIP-7702's design goal was to extend functionality and drive ecosystem development, its design choices can be understood as an experimental attempt. However, for secure deployment on mainnet, the existing vulnerabilities must be addressed through protocol improvements or external tools.
