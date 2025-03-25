@@ -209,12 +209,11 @@ batch_dispatch_eth();
 
 | 测试ID | 测试描述 | 测试配置 | 预期结果 | 实际结果 | 交易哈希 | 结论 |
 |-------|---------|---------|---------|---------|---------|------|
-| 1 | 直接授权给目标合约 | 授权给目标合约，然后调用批处理函数 | 成功 | 失败 | N/A | 必须授权给批处理合约而非直接授权给目标合约 |
-| 2 | 多合约授权 | 同时授权批处理合约和注册合约 | 总体nonce只增加1 | 总体nonce只增加1 | [0xa1fdb0f](https://sepolia.etherscan.io/tx/0xa1fdb0f13a46ceb5fb122e61666d6d3216fb033e53728aaeb254810b71bb228f) | 多个授权合约共享同一个nonce |
-| 3 | 低nonce授权 | authList的nonce故意设置低于当前nonce | 交易失败 | 交易成功，正常执行 | [0xd0fc90](https://sepolia.etherscan.io/tx/0xd0fc90557800773bce9423f89d67e972e9b5cdcd3f6dbf64a4ffea2b0d9f7bc2) | nonce检查机制与预期不符 |
-| 4 | 授权nonce不一致 | authList中设置不同的nonce | 交易失败 | 交易成功，正常执行 | [0xa3c744](https://sepolia.etherscan.io/tx/0xa3c744601c6dc0b83946f51945615c703d37700413f0f87a329440b2af298457) | 授权列表内的nonce一致性未被强制检查 |
-| 5 | 高nonce授权 | 授权nonce高于当前账户nonce | 交易失败 | 交易成功，当前nonce为17，授权nonce为19和20 | [0x3b205e](https://sepolia.etherscan.io/tx/0x3b205eb99136ffecd515da69cccf51838623f1adae3fcd93cb15cc65427180f3) | 授权可以使用未来nonce |
-| 6 | nonce复用测试 | 使用已在测试5中用过的nonce(19,20)发送新交易 | 交易失败 | 交易成功，可重复使用已授权过的nonce | [链接1](https://sepolia.etherscan.io/tx/0xa4befcad8f012f000d9bf33e8151d160212ef6921427d529a592a47b68794547) [链接2](https://sepolia.etherscan.io/tx/0x484e22fcdcb9b01b59c8cd240fb4884267b8fe849c9a1910e342a8bc3e169167) | 授权nonce可重复使用，存在重放风险 |
+| 1 | 多合约授权 | 同时授权批处理合约和注册合约 | 总体nonce只增加1 | 总体nonce只增加1 | [0xa1fdb0f](https://sepolia.etherscan.io/tx/0xa1fdb0f13a46ceb5fb122e61666d6d3216fb033e53728aaeb254810b71bb228f) | 多个授权合约共享同一个nonce |
+| 2 | 低nonce授权 | authList的nonce故意设置低于当前nonce | 交易失败 | 交易成功，正常执行 | [0xd0fc90](https://sepolia.etherscan.io/tx/0xd0fc90557800773bce9423f89d67e972e9b5cdcd3f6dbf64a4ffea2b0d9f7bc2) | nonce检查机制与预期不符 |
+| 3 | 授权nonce不一致 | authList中设置不同的nonce | 交易失败 | 交易成功，正常执行 | [0xa3c744](https://sepolia.etherscan.io/tx/0xa3c744601c6dc0b83946f51945615c703d37700413f0f87a329440b2af298457) | 授权列表内的nonce一致性未被强制检查 |
+| 4 | 高nonce授权 | 授权nonce高于当前账户nonce | 交易失败 | 交易成功，当前nonce为17，授权nonce为19和20 | [0x3b205e](https://sepolia.etherscan.io/tx/0x3b205eb99136ffecd515da69cccf51838623f1adae3fcd93cb15cc65427180f3) | 授权可以使用未来nonce |
+| 5 | nonce复用测试 | 使用已在测试5中用过的nonce(19,20)发送新交易 | 交易失败 | 交易成功，可重复使用已授权过的nonce | [链接1](https://sepolia.etherscan.io/tx/0xa4befcad8f012f000d9bf33e8151d160212ef6921427d529a592a47b68794547) [链接2](https://sepolia.etherscan.io/tx/0x484e22fcdcb9b01b59c8cd240fb4884267b8fe849c9a1910e342a8bc3e169167) | 授权nonce可重复使用，存在重放风险 |
 
 ### JSON-RPC 查询结果
 
