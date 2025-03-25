@@ -1,5 +1,21 @@
-# 批量交易测试
-经过验证，holesky 和 sepolia 都支持 7702 交易类型。并且都存在改严重的问题。
+# EIP-7702 批量交易测试与安全分析
+
+<div align="center">
+  <p>
+    <a href="./README_EN.md">
+      <img src="https://img.shields.io/badge/English-blue?style=for-the-badge&logo=markdown" alt="English"/>
+    </a>
+    <a href="#chinese">
+      <img src="https://img.shields.io/badge/简体中文-red?style=for-the-badge&logo=markdown" alt="简体中文"/>
+    </a>
+  </p>
+</div>
+
+<a id="chinese"></a>
+
+## 概述
+
+经过验证，Holesky 和 Sepolia 测试网络都支持 EIP-7702 交易类型。两个网络都存在相同的严重安全问题。
 
 ## 分发 ETH, deposit ETH to wETH, approve wETH
 

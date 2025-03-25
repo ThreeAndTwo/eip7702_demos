@@ -1,4 +1,17 @@
-# Batch Transaction Testing
+# EIP-7702 Batch Transaction Testing and Security Analysis
+
+<div align="center">
+  <p>
+    <a href="#english">
+      <img src="https://img.shields.io/badge/English-blue?style=for-the-badge&logo=markdown" alt="English"/>
+    </a>
+    <a href="./README.md">
+      <img src="https://img.shields.io/badge/简体中文-red?style=for-the-badge&logo=markdown" alt="简体中文"/>
+    </a>
+  </p>
+</div>
+
+<a id="english"></a>
 
 After verification, both Holesky and Sepolia testnets support EIP-7702 transactions. Both networks exhibit the same serious issues.
 
@@ -506,7 +519,7 @@ alternative_sponsored_transaction();
 
 ### Vulnerability Overview
 
-Based on actual test results, I have discovered serious security vulnerabilities in the EIP-7702 authorization mechanism, primarily in the nonce handling mechanism. These vulnerabilities have been successfully verified through transaction replay, and they pose a severe security threat to applications adopting this standard.
+Based on actual test results, I have discovered serious security vulnerabilities in the EIP-7702 authorization mechanism, primarily in the nonce handling mechanism. These vulnerabilities have been successfully verified through transaction replay, posing a severe security threat to applications adopting this standard.
 
 ### Vulnerability Details
 
