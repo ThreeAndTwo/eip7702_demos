@@ -529,54 +529,69 @@ Based on actual test results, I have discovered serious security vulnerabilities
 | CVE-02 | Authorizations accept arbitrary nonce values | High - Including past, current, and future nonces | Testing with extremely high nonce value (1001) | https://sepolia.etherscan.io/tx/0xad22ade561a7627753950fcd46e90399a4bbc57da2dfbb71db8dec6c10580b32 |
 | CVE-03 | Lack of nonce consistency check within authorization list | High - Allows mixing valid/invalid nonces | Using authorizations with different nonces in one transaction | https://sepolia.etherscan.io/tx/0xa3c744601c6dc0b83946f51945615c703d37700413f0f87a329440b2af298457 |
 
-### Root Cause Analysis
+## Vulnerability Root Cause Analysis
 
-#### Core Issue
+### Core Issues
 
-**Specification Requirements vs. Implementation Mismatch**:
+**Combination of Specification Deficiencies and Implementation Flaws**:
 
-- EIP-7702 clearly states: "Increase the nonce of `authority` by one." (After using an authorization, the authorizer's nonce should increase by 1)
-- Actual testing proves: Already used authorization nonces can be reused repeatedly, not following the specification requirement
+1. **Insufficient Specification Definition**:
+   - While EIP-7702 stipulates "Increase the nonce of authority by one," it fails to clearly define the authorization nonce validation mechanism and lifecycle
+   - The specification doesn't explicitly address how to handle reused authorization nonces
+   - There's no detailed specification of the relationship between authorization nonces and account state
 
-This is not just an implementation error but a fundamental violation of the core security mechanism.
+2. **Implementation Severely Deviates from Security Principles**:
+   - Node client implementations fail to adhere to blockchain's fundamental security principles (replay protection)
+   - Authorization validation doesn't verify whether a nonce has been previously used
+   - No persistent state tracking for used authorization nonces
+   - Authorization validation logic completely disconnected from standard transaction nonce validation
 
-1. **Implementation Errors**:
-    - No check during authorization verification whether the nonce has already been used
-    - No state record maintained for used authorization nonces
-    - Authorization verification logic completely separate from standard transaction nonce verification logic
+### Technical Deficiencies
+
+#### Missing State Management
+- The EVM fails to incorporate authorization nonces into account persistent state
+
+#### Validation Logic Flaws
+- Implementation only verifies signature validity while ignoring nonce uniqueness requirements
+- Accepts arbitrary nonce values (past, present, or future) for authorizations
+- Allows multiple authorizations with different nonces in the same transaction
+
+#### Disconnection from Existing Mechanisms
+- Fails to effectively integrate with the security model of account abstraction
+- Undermines fundamental assumptions about transaction ordering and execution
+- Doesn't leverage existing nonce mechanisms for replay protection
+
+### Attack Vectors and Security Impact
+
+1. **Perpetual Authorization Validity**:
+   - Once an authorization is issued, it cannot be revoked or invalidated
+   - Attackers can use the same authorization an unlimited number of times
+   - Users cannot invalidate authorizations through conventional means (increasing nonce)
+
 2. **Privileged Operation Risks**:
-    - In sponsored scenarios, authorizations can be replayed, leading to continuous fund drainage
-    - Attackers can gain long-term control rights through a single authorization
+   - Privileged operations through authorization can be repeatedly executed
+   - In sponsored transaction scenarios, this can lead to continuous fund drainage
+   - The permanence of authorizations makes attacks persistent
 
-## Practical Attack Scenarios
-
-1. **Unlimited Sponsorship Attack**:
-    - After obtaining a valid authorization once, attackers can repeatedly initiate sponsored transactions
-    - Each time they only need to pay gas fees to repeatedly execute authorized operations
-    - May lead to continuous transfers of authorized account assets
-2. **Transaction Order Manipulation**:
-    - Can pre-sign authorizations with future nonces and execute under specific conditions
-    - May break application logic that relies on transaction order
-3. **Authorization Persistence**:
-    - Even if users try to invalidate old authorizations by increasing nonce, attackers can still continue using them
+3. **System Integrity Compromise**:
+   - Compromises the fundamental assumptions of account security models
+   - Renders transaction ordering and account state unpredictable
+   - May cause cascading effects on higher-level applications that depend on these assumptions
 
 ### Vulnerability Consequences
 
 1. **Unlimited Authorization Replay**:
-    - A single authorization signature can be replayed infinitely
-    - Directly breaks the basic guarantee of transaction nonce as an anti-replay mechanism
-    - Authorizing once is equivalent to permanent authorization, users cannot revoke
+   - A single authorization signature can be replayed indefinitely
+   - Directly undermines the transaction nonce as a fundamental replay protection mechanism
+   - One-time authorization effectively becomes permanent authorization, with no revocation capability
+
 2. **Asset Security Threats**:
-    - Attackers can repeatedly execute authorized operations
-    - May lead to assets being repeatedly extracted until depleted
-    - Sponsorship mechanism abused as an attack vector
+   - Attackers can repeatedly execute authorized operations
+   - Potentially leads to assets being repeatedly extracted until depleted
+   - Sponsorship mechanisms can be weaponized as attack vectors
 
-### Root Cause
+### Summary
 
-1. **Core Implementation Defect**:
-    - EVM does not correctly implement the nonce consumption mechanism when processing EIP-7702 transactions
-    - Possibly due to misinterpretation of the specification or logical errors during implementation
-    - Lack of record and verification for used authorizations
-2. **Missing Verification Mechanism**:
-    - No mechanism implemented to check if an authorization has already been used
-    - Failure to associate authorization nonce with account state
+The design of EIP-7702 has significant issues, particularly in its nonce handling mechanism for preventing replay attacks. Design flaws such as reusable authorization nonces, acceptance of arbitrary nonce values, and lack of consistency checks make replay attacks a practical risk. The root cause lies in the designers' pursuit of flexibility, compatibility, and innovation, but this trade-off sacrificed some security aspects, resulting in a protocol that cannot fully prevent replay attacks on its own and requires additional measures from clients and users.
+
+If EIP-7702's design goal was to extend functionality and drive ecosystem development, its design choices can be understood as an experimental attempt. However, for secure deployment on mainnet, the existing vulnerabilities must be addressed through protocol improvements or external tools.
